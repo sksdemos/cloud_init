@@ -1,0 +1,6 @@
+---
+# vars file for cloud-init
+
+# Gets the user name who launches the playbooks
+local_user: "{{lookup('env', 'USER')}}"
+local_group: "{{local_user}}"

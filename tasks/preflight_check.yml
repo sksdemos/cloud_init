@@ -1,0 +1,55 @@
+- name: Sending Ping to KVM hosts
+  ping:
+ 
+# Uses magic variables to test list of active hosts Vs total hosts targeted by the play
+- name: Checking for targeted KVM hosts
+  run_once: yes
+  assert:
+    that:
+      - ansible_play_hosts == ansible_play_hosts_all
+    msg: "The targeted Virtualization hosts could not be reached"
+
+- name: Checking for targeted RHEL OS family
+  assert:
+    that:
+      - ansible_os_family|lower == 'redhat'
+    msg: "Targeted host needs to run RHEL, CentOS, Fedora"
+ 
+- name: Checking for targeted Fedora version
+  assert:
+    that:
+      - ansible_distribution_major_version|int >= 28
+    msg: "Fedora major version should be greater than 28"
+  when: ansible_distribution == "Fedora"
+ 
+- name: Checking for targeted RHEL OS family version
+  assert:
+    that:
+      - ansible_distribution_major_version|int >= 7
+    msg: "RHEL or CentOS major version should >= 7"
+
+- name: Collecting Virtualization package details
+  package_facts:
+    manager: "auto"
+
+- name: Checking for key virtualization package required by cloud-init role
+  assert:
+    that:
+      - "'libvirt-python' in ansible_facts.packages or 'python3-libvirt' in ansible_facts.packages"
+      - "'libvirt' in ansible_facts.packages"
+      - "'libguestfs-tools' in ansible_facts.packages"
+      - "'virt-install' in ansible_facts.packages"
+      - "'qemu-kvm' in ansible_facts.packages and 'qemu-img' in ansible_facts.packages"
+    msg: "Virtualization libraries missing. Run libvirt_setup role or Install Virtualization packages."
+
+- name: Getting CPU virtualization parameters
+  shell: "/usr/bin/egrep -o '(vmx|svm)' /proc/cpuinfo | /usr/bin/sort | /usr/bin/uniq"
+  register: is_virt_capable
+
+- name: Checking if hardware virtualization has been turned on
+  assert:
+    that:
+      - is_virt_capable.stdout == 'vmx' or is_virt_capable.stdout == 'svm'
+    msg: "Please enable hardware virtualization in BIOS"
+
+

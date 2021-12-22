@@ -1,0 +1,10 @@
+---
+# tasks file for cloud-init
+
+# Checks for VM hosts, and libvirt
+- name: Preflight checks
+  import_tasks: preflight_check.yml
+
+# Sets up cloud-init based VM creation
+- name: Checking for cloud-init based VM creation
+  include_tasks: process_cloud_vms.yml

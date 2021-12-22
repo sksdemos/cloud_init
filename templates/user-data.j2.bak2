@@ -1,0 +1,36 @@
+#cloud-config
+
+users:
+  - default
+  - name: root
+    lock-passwd: false
+    hashed_passwd: {{image.value.vm_root_passwd | string | password_hash('sha512')}}
+
+{% if image.value.vm_static_ip is defined %}
+runcmd:
+  - sed -i -e 's/BOOTPROTO=dhcp/BOOTPROTO=none/g' /etc/sysconfig/network-scripts/ifcfg-eth0
+  - echo 'IPADDR={{ cloud_vms_info.utility.vm_static_ip | ipaddr('address') }}' >> /etc/sysconfig/network-scripts/ifcfg-eth0
+  - echo 'NETMASK={{ cloud_vms_info.utility.vm_netmask }}' >> /etc/sysconfig/network-scripts/ifcfg-eth0
+  - echo 'GATEWAY={{ cloud_vms_info.utility.vm_gateway }}' >> /etc/sysconfig/network-scripts/ifcfg-eth0
+{% if image.value.dns1 is defined %}
+  - echo 'DNS1={{ cloud_vms_info.utility.vm_dns1 }}' >> /etc/sysconfig/network-scripts/ifcfg-eth0
+{% endif %}
+{% if image.value.dns2 is defined %}
+  - echo 'DNS2={{ cloud_vms_info.utility.vm_dns2 }}' >> /etc/sysconfig/network-scripts/ifcfg-eth0
+{% endif %}
+{% if image.value.dns3 is defined %}
+  - echo 'DNS3={{ cloud_vms_info.utility.vm_dns3 }}' >> /etc/sysconfig/network-scripts/ifcfg-eth0
+{% endif %}
+  - echo 'NM_CONTROLLED=no' >> /etc/sysconfig/network-scripts/ifcfg-eth0
+  - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
+  - systemctl restart sshd
+
+  
+{% else %}
+runcmd:
+  - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
+  - systemctl restart sshd
+{% endif %}
+
+
+

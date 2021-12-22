@@ -1,0 +1,82 @@
+---
+- name: Create cloud-init data directory for VM {{image.key}}
+  file:
+    state: directory
+    path: "{{cloud_init_data_dir}}/{{image.key}}"
+    recurse: yes
+    group: qemu
+
+- name: Create cloud-init meta data for VM {{image.key}}
+  copy: 
+    content: |
+      instance-id: {{ image.key }}
+      hostname: {{ image.value.vm_fqdn }}
+      local-hostname: {{ image.value.vm_local_hostname }}
+    dest: "{{cloud_init_data_dir}}/{{image.key}}/meta-data"
+
+
+- name: Create cloud-init user data for VM {{image.key}}
+  template: 
+    src: user-data.j2
+    dest: "{{cloud_init_data_dir}}/{{image.key}}/user-data"
+
+
+
+  # NOTE: Given below is a QEMU qcow2 optimization where a tiny root disk is created that will make use of a base cloud image
+  #       The tiny image will grow based on how the image is used and how content is added to the new root disk. 
+- name: Create root disk based on cloud image for VM {{image.key}}
+  command: "qemu-img create -b {{cloud_storage_path}}/{{ image.value.vm_image_link | urlsplit('path') | basename }} -f qcow2 -F qcow2 {{cloud_storage_path}}/{{image.key}}.qcow2 {{item.value.vm_root_disk_size}}"
+  
+  #EXAMPLE: qemu-img create -b CentOS-7-x86_64-GenericCloud-2009.qcow2 -f qcow2 -F qcow2 rootdisk.qcow2 10G  
+
+  #create [--object objectdef] [-b backing_file] [-F backing_fmt] [-q] [-f fmt] [-u] [-o options] filename [size]
+  # -b backing file image. Can be a cloud image
+  # -F image format of the backing image
+  # -f 'fmt' is the disk image format. It is guessed automatically in most cases eg qcow2
+  # -q is quiet mode
+  # filename is the name of the disk image filename. rootdisk in our case
+
+
+
+  # NOTE: This ISO image will be created with the necessary root disk customization information and will then be mounted as a CDROM on the VM
+  #       cloud-init will then process the data on the CDROM to configure VM guest parameters
+- name: Create cloud-init ISO image for VM {{image.key}} 
+  command: "genisoimage -output {{cloud_init_data_dir}}/{{image.key}}/cidata.iso -volid cidata -joliet -r {{cloud_init_data_dir}}/{{image.key}}/user-data {{cloud_init_data_dir}}/{{image.key}}/meta-data"
+  
+  # PURPOSE: This ISO image will be used while booting the VM and cloud-init will use the user-data and meta-data files to configure the image
+  # EXAMPLE: genisoimage -output cidata.iso -V cidata -r -J user-data meta-data
+
+  # --output name of the output ISO file
+  # -volid -V volume label for the ISO. This has to be set to cidata for cloud-init
+  # -joliet -J Generate Joliet directory information
+  # -r Generate rock directory structure
+
+- name: Deploying the VM {{image.key}}
+  command: >
+     virt-install 
+     --connect qemu:///system 
+     --import 
+     --name {{ image.key }} 
+     --ram {{ image.value.vm_memory }}  
+     --vcpus {{image.value.vm_cpu}}
+     --disk {{ cloud_storage_path }}/{{image.key}}.qcow2,format=qcow2,bus=virtio
+     --disk {{ cloud_init_data_dir }}/{{image.key}}/cidata.iso,device=cdrom
+     --network network:{{ cloud_network }},model=virtio 
+     --os-type={{image.value.vm_os_type}} 
+     --os-variant={{image.value.vm_os_variant}} 
+     --noautoconsole
+
+- name: Stopping domain {{image.key}}
+  virt:
+    command: destroy
+    name: "{{image.key}}"
+
+- name: Starting domain {{image.key}}
+  virt:
+    command: start
+    name: "{{image.key}}"
+
+- name: Eject CD-ROM on VM {{image.key}}
+  command: "virsh --connect qemu:///system change-media {{ image.key }} hda --eject --config"
+
+  #,size={{image.value.vm_root_disk_size}}
