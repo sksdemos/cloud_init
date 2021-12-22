@@ -1,0 +1,5 @@
+
+* Sunday June 13, 2021
+- Initial release of cloud_init role v0.1
+- Added README.md
+- Added changelog.txt
