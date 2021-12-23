@@ -41,18 +41,18 @@
 - name: Synchronize cloud images to image storage path
   synchronize:
     src: "{{ cloud_images_dir }}/"
-    dest: "{{ cloud_storage_path }}"
+    dest: /var/lib/libvirt/images
 
 - name: Check if the cloud image is already existing
   stat:
-    path: "{{ cloud_storage_path }}/{{ item | urlsplit('path') | basename }}"
+    path: "/var/lib/libvirt/images/{{ item | urlsplit('path') | basename }}"
   loop: "{{ vm_img_url }}"
   register: img_available
 
 - name: Initiating download of cloud images (if required)
   get_url:
     url: "{{ item.item }}"
-    dest: "{{ cloud_storage_path }}"
+    dest: /var/lib/libvirt/images
     force: yes
     owner: qemu
     group: qemu
@@ -70,7 +70,7 @@
     recurse: yes
     group: qemu
 
-- name: Generating cloud-init data
+- name: Generating VMs
   include_tasks: create_cloud_vm.yml
   loop: "{{ lookup('dict',cloud_vms_info, wantlist=True) }}"
   vars:

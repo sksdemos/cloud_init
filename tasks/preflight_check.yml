@@ -37,7 +37,6 @@
     that:
       - "'libvirt-python' in ansible_facts.packages or 'python3-libvirt' in ansible_facts.packages"
       - "'libvirt' in ansible_facts.packages"
-      - "'libguestfs-tools' in ansible_facts.packages"
       - "'virt-install' in ansible_facts.packages"
       - "'qemu-kvm' in ansible_facts.packages and 'qemu-img' in ansible_facts.packages"
     msg: "Virtualization libraries missing. Run libvirt_setup role or Install Virtualization packages."

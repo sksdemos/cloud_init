@@ -25,7 +25,7 @@
   # NOTE: Given below is a QEMU qcow2 optimization where a tiny root disk is created that will make use of a base cloud image
   #       The tiny image will grow based on how the image is used and how content is added to the new root disk. 
 - name: Create root disk based on cloud image for VM {{image.key}}
-  command: "qemu-img create -b {{cloud_storage_path}}/{{ image.value.vm_image_link | urlsplit('path') | basename }} -f qcow2 -F qcow2 {{cloud_storage_path}}/{{image.key}}.qcow2 {{item.value.vm_root_disk_size}}"
+  command: "qemu-img create -b /var/lib/libvirt/images/{{ image.value.vm_image_link | urlsplit('path') | basename }} -f qcow2 -F qcow2 {{cloud_storage_path}}/{{image.key}}.qcow2 {{item.value.vm_root_disk_size}}"
   
   #EXAMPLE: qemu-img create -b CentOS-7-x86_64-GenericCloud-2009.qcow2 -f qcow2 -F qcow2 rootdisk.qcow2 10G  
 
@@ -66,10 +66,47 @@
      --os-variant={{image.value.vm_os_variant}} 
      --noautoconsole
 
+
+- name: Adding additional network interfaceS (if required)
+  command: virsh attach-interface --domain {{ image.key }} --type network --source {{ network_name }} --model virtio --config 
+  loop: "{{ image.value.vm_additional_nics }}"
+  loop_control:
+    loop_var: network_name
+  when: image.value.vm_additional_nics is defined
+
+
 - name: Stopping domain {{image.key}}
   virt:
     command: destroy
     name: "{{image.key}}"
+
+
+# The option -o size=10G,preallocation=metadata if not used will create VMs 193k in size which are usable
+- name: Generating block devices (if required)
+  command: qemu-img create -o size={{size}},preallocation=metadata -f qcow2 {{ cloud_storage_path }}/{{image.key}}-disk{{idx}}-{{size}}.qcow2
+  loop: "{{ image.value.vm_additional_disks }}"
+  loop_control:
+    index_var: idx
+    loop_var: size
+  when: image.value.vm_additional_disks is defined
+
+- name: Setting disk array
+  set_fact:
+    blockdev: [b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z]
+
+# if we use item instead of loop_var: size then ansible will complain about reuse of item
+- name: Adding hard disks to {{image.key}} (if required)
+  command: >
+     virsh attach-disk {{image.key}}
+     --source {{ cloud_storage_path }}/{{image.key}}-disk{{idx}}-{{size}}.qcow2
+     --target vd{{blockdev[idx]}}  
+     --driver qemu 
+     --persistent
+  loop: "{{ image.value.vm_additional_disks }}"
+  loop_control:
+    index_var: idx
+    loop_var: size
+  when: image.value.vm_additional_disks is defined
 
 - name: Starting domain {{image.key}}
   virt:
@@ -77,6 +114,6 @@
     name: "{{image.key}}"
 
 - name: Eject CD-ROM on VM {{image.key}}
-  command: "virsh --connect qemu:///system change-media {{ image.key }} hda --eject --config"
+  command: "virsh --connect qemu:///system change-media {{ image.key }} sda --eject --config"
 
   #,size={{image.value.vm_root_disk_size}}

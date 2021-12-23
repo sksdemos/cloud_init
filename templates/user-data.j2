@@ -16,13 +16,19 @@ write_files:
     ONBOOT=yes
     TYPE=Ethernet
     USERCTL=no
-    IPADDR={{ cloud_vms_info.utility.vm_static_ip | ipaddr('address') }}
-    NETMASK={{ cloud_vms_info.utility.vm_netmask }}
-    GATEWAY={{ cloud_vms_info.utility.vm_gateway }}
+    IPADDR={{ image.value.vm_static_ip | ipaddr('address') }}
+    NETMASK={{ image.value.vm_netmask }}
+    GATEWAY={{ image.value.vm_gateway }}
 {% if image.value.vm_dns1 is defined %}
-    DNS1={{ cloud_vms_info.utility.vm_dns1 }}
+    DNS1={{ image.value.vm_dns1 }}     
 {% endif %}
-    NM_CONTROLLED=no
+{% if image.value.vm_dns2 is defined %}
+    DNS2={{ image.value.vm_dns2 }}     
+{% endif %}
+{% if image.value.vm_dns3 is defined %}
+    DNS3={{ image.value.vm_dns3 }}     
+{% endif %}
+    NM_CONTROLLED={{ image.value.vm_nm_controlled_network }}
   path: /etc/sysconfig/network-scripts/ifcfg-eth0
 
 runcmd:
