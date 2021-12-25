@@ -113,7 +113,10 @@
     command: start
     name: "{{image.key}}"
 
-- name: Eject CD-ROM on VM {{image.key}}
-  command: "virsh --connect qemu:///system change-media {{ image.key }} sda --eject --config"
+- name: Getting CDROM info
+  shell: 'virsh domblklist utility | grep cidata.iso | cut -b 2-4'
+  register: cdrom_device
 
-  #,size={{image.value.vm_root_disk_size}}
+- name: Eject CD-ROM on VM {{image.key}}
+  command: "virsh --connect qemu:///system change-media {{ image.key }} {{ cdrom_device.stdout }} --eject --config"
+
