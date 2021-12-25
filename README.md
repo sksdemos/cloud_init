@@ -43,8 +43,8 @@ This dictionary is used initialize when a new network is required for VMs for a 
 |Variable|Comments  |
 |--|--|
 | vm_recreate | Defaults to a value of **False** for safety reasons so that VMs are not recreated if they are already existing. This causes your role to stall with a message. Can be set to **True** to delete the VM and recreate it again|
-| cloud_images_dir | Defaults to the name **cloud_images**. Will be created in the same place as the playbook that calls the role, if it doesn't exist. If this folder is already existing then the role tries to rsync the folder content to the path stored in the cloud_storage_path |
-| cloud_storage_path | Path where the cloud image is stored and VM boot disk is created. |
+| cloud_images_dir | Defaults to the name **cloud_images**. Will be created in the same place as the playbook that calls the role, if it doesn't exist. If this folder is already existing then the role tries to rsync the folder content to the **/var/lib/libvirt/images** path |
+| cloud_storage_path | Path where VM boot disk and other block device based resources are stored. |
 | cloud_network | Libvirt network to be used by cloud images. This defaults to the default libvirt network called **default**. |
 | cloud_image_download_timeout| Max time to download cloud image. Defaults to 300 seconds. Increase this value for slower internet connections. |
 | cloud_image_download_poll | Polls for task completion every 10 seconds by default. |
