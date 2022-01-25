@@ -56,8 +56,8 @@
     force: yes
     owner: qemu
     group: qemu
-  when: item.stat.exists == false
-  loop: "{{img_available.results}}"
+  when: not item.stat.exists
+  loop: "{{ img_available.results }}"
   loop_control:
     label: output
   async: "{{ cloud_image_download_timeout }}"

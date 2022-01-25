@@ -42,8 +42,13 @@
     msg: "Virtualization libraries missing. Run libvirt_setup role or Install Virtualization packages."
 
 - name: Getting CPU virtualization parameters
-  shell: "/usr/bin/egrep -o '(vmx|svm)' /proc/cpuinfo | /usr/bin/sort | /usr/bin/uniq"
+  shell: |
+    set -o pipefail
+    /usr/bin/egrep -o '(vmx|svm)' /proc/cpuinfo | /usr/bin/sort | /usr/bin/uniq
+  args:
+    executable: /bin/bash
   register: is_virt_capable
+  changed_when: is_virt_capable.rc != 0
 
 - name: Checking if hardware virtualization has been turned on
   assert:

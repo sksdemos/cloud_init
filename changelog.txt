@@ -1,3 +1,9 @@
+* Monday January 24, 2022
+- Fixed ansible-lint issues
+
+* Sunday December 26, 2021
+- Fixed bug in CD-ROM ejecting that caused fatal errors
+
 * Sunday November 21, 2021
 - Fixed bug in the jinja template for cloud-init
 - Optimized role to sync cloud images to path /var/lib/libvirt/images. Therefore these cloud images can be used across multiple deployments.

@@ -15,5 +15,5 @@ galaxy_info:
     - hypervisor
     - kvm
     - virtualization
-    - cloud-init
+    - cloudinit
 dependencies: []
