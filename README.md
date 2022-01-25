@@ -34,6 +34,7 @@ This dictionary is used initialize when a new network is required for VMs for a 
 | vm_static_ip | Static IP to be assigned to the VM. (optional)|
 | vm_netmask | Subnet mask to be used with the static IP. Must be set if static IP is being used|
 | vm_gateway | The default gateway that the VM will use to access external networks. Must be set if static IP is used|
+| vm_dns_search_domain | DNS search domain to be used in ethernet script of the VM |
 | vm_dns1 | IP address of the first DNS server. **vm_dns2** and **vm_dns3** can be used to hold IP address of secondary and tertiary DNS servers.|
 | vm_nm_controlled_network: 'yes'| Can have values '**yes**' or '**no**'. 'Yes' is used compulsorily for RHEL8 family as they only use the NetworkManager service. For RHEL7 family you can set this to 'no'|
 | vm_additional_nics | Defines additional network interface required by the VM. This is defined as a list where each element is the name of the libvirt network to use. There should not be more than 3 elements in this list.|
