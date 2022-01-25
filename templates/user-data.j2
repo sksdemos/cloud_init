@@ -19,6 +19,7 @@ write_files:
     IPADDR={{ image.value.vm_static_ip | ipaddr('address') }}
     NETMASK={{ image.value.vm_netmask }}
     GATEWAY={{ image.value.vm_gateway }}
+    DOMAIN={{ image.value.vm_dns_search_domain }}
 {% if image.value.vm_dns1 is defined %}
     DNS1={{ image.value.vm_dns1 }}     
 {% endif %}
