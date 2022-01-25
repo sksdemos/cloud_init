@@ -114,7 +114,7 @@
     name: "{{image.key}}"
 
 - name: Getting CDROM info
-  shell: 'virsh domblklist utility | grep cidata.iso | cut -b 2-4'
+  shell: 'virsh domblklist {{ image.key }} | grep cidata.iso | cut -b 2-4'
   register: cdrom_device
 
 - name: Eject CD-ROM on VM {{image.key}}
