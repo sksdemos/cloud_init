@@ -34,6 +34,9 @@ write_files:
 
 runcmd:
   - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
+{% if ansible_os_family == 'RedHatt' and ansible_distribution_major_version >= 9 %}
+  - sed -i -e '/^#PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+{% endif %}
   - systemctl restart sshd
 
 power_state:
@@ -42,6 +45,9 @@ power_state:
 {% else %}
 runcmd:
   - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
+{% if ansible_os_family == 'RedHatt' and ansible_distribution_major_version >= 9 %}
+  - sed -i -e '/^#PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+{% endif %}
   - systemctl restart sshd
 {% endif %}
 
