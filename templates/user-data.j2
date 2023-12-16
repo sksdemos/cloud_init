@@ -36,6 +36,7 @@ runcmd:
   - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
 {% if ansible_os_family == 'RedHat' and ansible_distribution_major_version | int >= 9 %}
   - sed -i -e '/^#PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+  - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config.d/50-cloud-init.conf
 {% endif %}
   - systemctl restart sshd
 
@@ -47,6 +48,7 @@ runcmd:
   - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
 {% if ansible_os_family == 'RedHat' and ansible_distribution_major_version | int >= 9 %}
   - sed -i -e '/^#PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+  - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config.d/50-cloud-init.conf
 {% endif %}
   - systemctl restart sshd
 {% endif %}
