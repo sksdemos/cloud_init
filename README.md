@@ -2,8 +2,10 @@
 
 # Ansible role `cloud_init` v0.2
 
-Ansible role that acts as a provisioner  for creating multiple virtual machines at a blazing fast pace. This role leverages on the efficiencies of libvirt and qemu packages along with cloud-init to create VMs. Cloud-init is the **industry standard multi-distribution method for cross-platform cloud instance initialization**. It is supported across all major public cloud providers, provisioning systems for private cloud infrastructure, and bare-metal installations. This role utilized cloud-init for libvirt. The role is optimized in many ways:
+Ansible role that acts as a provisioner for creating multiple virtual machines quickly. This role leverages on the efficiencies of libvirt and qemu packages along with cloud-init to create VMs. Cloud-init is the **industry standard multi-distribution method for cross-platform cloud instance initialization**. It is supported across all major public cloud providers, provisioning systems for private cloud infrastructure, and bare-metal installations. This role utilized cloud-init for libvirt. The role is optimized in many ways:
 
+ - Allows the root user to login with a password over a network
+ - Optionally allows for creating a cloud user with sudo privileges and locked for password access. Can be used with ssh_authorized_keys
  - Prevents multiple downloads of the same cloud image
  - Prevents re-creation of VMs by stalling the role if they already exist. This behavior can be changed
  - For slow connections the cloud image can be downloaded and put in a local folder to prevent downloading from the web
@@ -22,10 +24,12 @@ This role requires a set of variables along with the dictionary  **cloud_vms_inf
 This dictionary is used initialize when a new network is required for VMs for a specific deployment that need to use a specific IP address range that does not interfere with existing applications.
 | Variable | Comments |
 | :---  | :--- |
-| vm_image_link | URL for a specific cloud image
-| vm_local_hostname | Hostname assigned to the VM during the cloud-init process.
-| vm_fqdn | Fully qualified domain name of the Virtual machine. Used by cloud-init
-| vm_root_passwd | Password to set for the root user during the cloud-init process
+| vm_image_link | URL for a specific cloud image |
+| vm_local_hostname | Hostname assigned to the VM during the cloud-init process. |
+| vm_fqdn | Fully qualified domain name of the Virtual machine. Used by cloud-init |
+| vm_root_passwd | Password to set for the root user during the cloud-init process |
+| vm_custom_cloud_user | Optional custom cloud user to be created during cloud-init process. Password access will be locked. User is sudo enabled |
+| vm_ssh_authorized_keys | list of ssh public keys that will be applied to the root and the optional cloud  user during the cloud-init process |
 | vm_os_type | Type of the OS being installed. i.e. **windows** or **linux**
 | vm_os_variant | Variant of the OS being installed. Run the **virt-install --os-variant list** command to see a set of supported OS variants.
 | vm_memory | Memory required by the VM.|
