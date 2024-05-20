@@ -1,12 +1,23 @@
 #cloud-config
 
 users:
-  - default
   - name: root
     lock-passwd: false
     hashed_passwd: {{image.value.vm_root_passwd | string | password_hash('sha512')}}
-
+{% if image.value.vm_ssh_authorized_keys is defined %}
+    ssh_authorized_keys: {{ image.value.vm_ssh_authorized_keys }}
+{% endif %}
+{% if image.value.vm_custom_cloud_user is defined %}
+  - name: {{ image.value.vm_custom_cloud_user }}
+    lock-passwd: true
+    gecos: User defined cloud user account
+    sudo: ALL=(ALL) NOPASSWD:ALL
+{% if image.value.vm_ssh_authorized_keys is defined %}
+    ssh_authorized_keys: {{ image.value.vm_ssh_authorized_keys }}
+{% endif %}
+{% endif %}
 {% if image.value.vm_static_ip is defined %}
+
 write_files:
 - content: |
     # Cloudinit icfg-eth0 file (centos/redhat format)
@@ -39,10 +50,10 @@ runcmd:
   - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config.d/50-cloud-init.conf
 {% endif %}
   - systemctl restart sshd
+  - nmcli con reload
+  - nmcli con up 'System eth0'
+  - touch /etc/cloud/cloud-init.disabled
 
-power_state:
-  mode: reboot
-  
 {% else %}
 runcmd:
   - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
@@ -51,7 +62,10 @@ runcmd:
   - sed -i -e '/^PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config.d/50-cloud-init.conf
 {% endif %}
   - systemctl restart sshd
+  - touch /etc/cloud/cloud-init.disabled
 {% endif %}
 
-
+packages:
+  - "wget"
+  - "bash-completion"
 
